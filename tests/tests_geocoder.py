@@ -1,5 +1,5 @@
 from unittest import TestCase
-from geocoder import Confidence, TigerGeocoder
+from mygeocoder import Confidence, TigerGeocoder
 
 class TigerGeocoderTests(TestCase):
     """

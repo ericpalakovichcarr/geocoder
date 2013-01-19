@@ -13,15 +13,23 @@ class Confidence(object):
 
 class TigerGeocoder(object):
 
-    def __init__(self, conn_string=None):
-        if conn_string == None:
+    def __init__(self, conn_string=None, raise_shared_mem_exc=None):
+        if conn_string is None:
             conn_string = os.environ.get("GEOCODER_CONN_STRING")
+        if raise_shared_mem_exc is None:
+            raise_shared_mem_exc = os.environ.get("GEOCODER_RAISE_SHARED_MEM_EXC", "true").lower() in ['1', 'yes', 'true']
         self.conn = psycopg2.connect(conn_string)
+        self.raise_shared_mem_exc = raise_shared_mem_exc
 
     def geocode(self, address):
+        result = None
         cursor = self.conn.cursor()
-        cursor.execute("SELECT addy, ST_Y(geomout) As lat, ST_X(geomout) As lon, rating FROM geocode(%s)", [address])
-        result = cursor.fetchone()
+        try:
+            cursor.execute("SELECT addy, ST_Y(geomout) As lat, ST_X(geomout) As lon, rating FROM geocode(%s)", [address])
+            result = cursor.fetchone()
+        except psycopg2.OperationalError as exc:
+            if "out of shared memory" in str(exc) and self.raise_shared_mem_exc:
+                raise
 
         if result:
             # Recreate the address
