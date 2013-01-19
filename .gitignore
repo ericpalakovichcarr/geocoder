@@ -1,0 +1,9 @@
+*.pyc
+dist
+build
+*.egg-info
+.coverage
+.tox
+.DS_Store
+.idea
+virenv
