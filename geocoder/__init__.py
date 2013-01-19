@@ -1,6 +1,7 @@
 __version__ = VERSION = '0.1.0'
 __version_info__ = tuple(__version__.split('.'))
 
+import os
 import re
 import psycopg2
 
@@ -12,7 +13,9 @@ class Confidence(object):
 
 class TigerGeocoder(object):
 
-    def __init__(self, conn_string):
+    def __init__(self, conn_string=None):
+        if conn_string == None:
+            conn_string = os.environ.get("GEOCODER_CONN_STRING")
         self.conn = psycopg2.connect(conn_string)
 
     def geocode(self, address):
