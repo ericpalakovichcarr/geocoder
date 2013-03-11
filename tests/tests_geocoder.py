@@ -1,4 +1,5 @@
 from unittest import TestCase
+import psycopg2
 from mygeocoder import Confidence, TigerGeocoder
 
 class TigerGeocoderTests(TestCase):
@@ -7,7 +8,7 @@ class TigerGeocoderTests(TestCase):
     """
 
     def setUp(self):
-        self.geocoder = TigerGeocoder("dbname=geocoder user=eric")
+        self.geocoder = TigerGeocoder("dbname=geocoder user=eric", raise_shared_mem_exc=True)
 
     def tearDown(self):
         self.geocoder.close()
@@ -35,8 +36,20 @@ class TigerGeocoderTests(TestCase):
         self.assertGeocode("1724 Massachusetts Ave N, Washington DC", Confidence.FAIR)
 
     def test_poor_geocode(self):
-        self.assertGeocode("1724 Mass Ave, Washington DC", Confidence.POOR)
+        self.assertGeocode("1724 Massach Ave, Washington DC", Confidence.POOR)
 
     def test_no_match_geocode(self):
-        self.assertGeocode("Mass Ave", Confidence.NO_MATCH)
         self.assertGeocode("", Confidence.NO_MATCH)
+
+    def test_shared_mem_exception_raised(self):
+        self.geocoder = TigerGeocoder("dbname=geocoder user=eric", raise_shared_mem_exc=True)
+        self.assertRaises(psycopg2.OperationalError, self.geocoder.geocode, "-1 Mass Ave, Washington DC")
+
+    def test_shared_mem_no_match(self):
+        self.geocoder = TigerGeocoder("dbname=geocoder user=eric", raise_shared_mem_exc=False)
+        self.assertGeocode("-1 Mass Ave, Washington DC", Confidence.NO_MATCH)
+
+    def test_shared_mem_no_match_twice(self):
+        self.geocoder = TigerGeocoder("dbname=geocoder user=eric", raise_shared_mem_exc=False)
+        self.assertGeocode("-1 Mass Ave, Washington DC", Confidence.NO_MATCH)
+        self.assertGeocode("-1 Mass Ave, Washington DC", Confidence.NO_MATCH)
