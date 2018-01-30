@@ -7,7 +7,8 @@ This is a bare-bones wrapper around the Tiger Geocoder that comes with PostGIS 2
     from mygeocoder import TigerGeocoder, Confidence
 
     geocoder = TigerGeocoder(conn_string="[your_postgres_conn_string]")
-    result = geocoder.geocoder("1724 Massachusetts Ave NW, Washington DC")
+    
+    result = geocoder.geocode("1724 Massachusetts Ave NW, Washington DC")
 
 Result looks like this:
 
